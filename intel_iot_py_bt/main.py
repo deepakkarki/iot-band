@@ -1,6 +1,7 @@
 import bluetooth as bt
 import time
 
+devices = [0]
 def connect(addr=None, name=None):
 	'''
 	This fuction is used to establish a connection between the computer and device.
@@ -8,7 +9,7 @@ def connect(addr=None, name=None):
 	specify either one to connect to the device, specifing addr is much faster
  	returns a socket object, which has a stream to the device
 	'''
-	devs = bt.discover_devices()
+	'''devs = bt.discover_devices()
 	#returns a list of addresses of visible bluetooth devices
 	if addr and addr in devs:
 		pass
@@ -19,7 +20,7 @@ def connect(addr=None, name=None):
 				addr = dev
 				
 	else : return None
-
+	'''
 	port = 1
 	sock=bt.BluetoothSocket( bt.RFCOMM )
 	sock.connect((addr, port))
@@ -30,8 +31,16 @@ def connect(addr=None, name=None):
 def main(con):
 	try:
 		while True:
-			res = con.recv(100)
+			res = con.recv(100) #gets "1,2" => device_id 1, command 2
+			if "," not in res:
+				res += con.recv(100)
+			
 			print "recv : ", res
+			res = res.split(",")
+			if int(res[0]) == 1 or int(res[0]) == 3:
+				devices[1].send('1')
+			else:
+				devices[1].send('0')
 	
 	except KeyboardInterrupt as e:
 		print "Closing Connection"
@@ -39,7 +48,9 @@ def main(con):
 		print "Good Bye!! hum hain rahi nerd ke, phir melange chalte chalte" #hindi 
 		
 if __name__ == '__main__':
-	#connection = connect(addr = '00:12:12:24:16:30') 
-	connection = connect(addr = '30:14:10:13:10:81')
-	main(connection)
+	band = connect(addr = '00:12:12:24:16:30') 
+	
+	devices.append(connect(addr = '30:14:10:13:10:81'))
+	
+	main(band)
 
